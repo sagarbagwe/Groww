@@ -2,6 +2,29 @@
 
 This repository contains the implementation of the payment process for an e-commerce website/application. The payment process involves navigating through the checkout and payment pages, selecting payment options, handling successful and failed payments, and providing a seamless user experience.
 
+# Update commit on 27/12/2023
+
+
+## Promo Code Feature
+
+### Applying a Promo Code
+
+Describe how users can apply a promo code to get discounts on their orders.
+
+1. Navigate to the checkout page.
+2. Find the "Apply Promo Code" section.
+3. Enter a valid promo code in the input field.
+4. Click the "Apply" button.
+
+### Available Promo Codes
+
+List the available promo codes and their corresponding discounts.
+
+- Promo Code 1: 20% off (Code: GROWW)
+- Promo Code 2: 30% off (Code: GROWWWITHGROWW)
+- Promo Code 3: 40% off (Code: SDE_INTERN)
+
+
 ## Instructions
 
 Follow the steps below to understand and test the payment process:
