@@ -1,10 +1,10 @@
 import React from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { FaCheckCircle, FaTimesCircle, FaClock } from 'react-icons/fa';
-import CashIcon from './CashIcon';
-import UPIIcon from './UPIIcon';
-import WalletIcon from './WalletIcon';
-import CardIcon from './CardIcon';
+import CashIcon from './Icon/CashIcon';
+import CardIcon from './Icon/CardIcon';
+import UPIIcon from './Icon/UPIIcon';
+import WalletIcon from './Icon/WalletIcon';
 
 const OrderConfirmationPage = () => {
   const location = useLocation();
@@ -40,6 +40,17 @@ const OrderConfirmationPage = () => {
     return paymentMethodIcons[selectedPaymentMethod] || null;
   };
 
+  // Extract payment details with fallback values
+  const totalPayment = paymentDetails?.totalPayment || 0;
+  const platformFee = paymentDetails?.platformFee || 0;
+  const gst = paymentDetails?.gst || 0;
+  const totalAmountPayable = paymentDetails?.totalAmountPayable || 0;
+  const promoCode = paymentDetails?.promoCode || '';
+  const discountedTotal = paymentDetails?.discountedTotal || 0;
+
+  // Calculate totalPayable by subtracting discountedTotal from totalAmountPayable
+  const totalPayable = totalAmountPayable - discountedTotal;
+
   const handlePrint = () => {
     window.print();
   };
@@ -53,7 +64,7 @@ const OrderConfirmationPage = () => {
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Order Confirmation</h1>
 
-      <div className="mb-4">
+      <div className="mb-4 rounded p-4 border bg-gray-200">
         <h2 className="text-xl font-semibold mb-2">Order Details</h2>
         {orderDetails.products.map((product) => (
           <div key={product.id} className="flex items-center mb-2 rounded p-4 bg-gray-100">
@@ -69,7 +80,7 @@ const OrderConfirmationPage = () => {
         ))}
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4 rounded p-4 border bg-gray-200">
         <h2 className="text-xl font-semibold mb-2">Payment Method</h2>
         <div className="flex items-center">
           <button className="payment-method-button flex items-center">
@@ -79,30 +90,49 @@ const OrderConfirmationPage = () => {
         </div>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4 rounded p-4 border bg-gray-200">
         <h2 className="text-xl font-semibold mb-2">Order Status</h2>
-        <p>
+        <p className="flex items-center">
           {getPaymentStatusIcon()}
-          Status: {orderStatus}
+          <span className="ml-2 text-xl font-semibold">Status: {orderStatus}</span>
         </p>
-        {orderStatus === 'Success' && <p>Thank you for your purchase!</p>}
+        {orderStatus === 'Success' && (
+          <>
+            <p className="mt-2">Thank you for your purchase!</p>
+            <div className="flex items-center mt-4 text-green-500">
+              {getPaymentStatusIcon()}
+              <span className="ml-2">Order Confirmed</span>
+            </div>
+          </>
+        )}
         {orderStatus === 'Failure' && (
           <>
-            <p>Oops! Something went wrong with your order.</p>
+            <p className="mt-2">Oops! Something went wrong with your order.</p>
             <button className="bg-blue-500 text-white py-2 px-4 rounded mt-4" onClick={handleTryAgain}>
               Try Again
             </button>
           </>
         )}
-        {orderStatus === 'Pending' && <p>Your order is being processed.</p>}
+        {orderStatus === 'Pending' && (
+          <>
+            <p className="mt-2">Your order is being processed.</p>
+            <div className="flex items-center mt-4 text-yellow-500">
+              {getPaymentStatusIcon()}
+              <span className="ml-2">Order Pending</span>
+            </div>
+          </>
+        )}
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4 rounded p-4 border bg-gray-200">
         <h2 className="text-xl font-semibold mb-2">Payment Details</h2>
-        <p>Total Payment: ${paymentDetails.totalPayment.toFixed(2)}</p>
-        <p>Platform Fee (2%): ${paymentDetails.platformFee.toFixed(2)}</p>
-        <p>GST (18%): ${paymentDetails.gst.toFixed(2)}</p>
-        <p>Total Amount Payable: ${paymentDetails.totalAmountPayable.toFixed(2)}</p>
+        <p>Total Payment: ${totalPayment.toFixed(2)}</p>
+        <p>Platform Fee (2%): ${platformFee.toFixed(2)}</p>
+        <p>GST (18%): ${gst.toFixed(2)}</p>
+        <p>Total Amount Payable: ${totalAmountPayable.toFixed(2)}</p>
+        {promoCode && <p>Promo Code Applied: {promoCode}</p>}
+        {discountedTotal && <p>Discounted Total: ${discountedTotal.toFixed(2)}</p>}
+        <p>Total Payable: ${totalPayable.toFixed(2)}</p>
       </div>
 
       <button className="bg-blue-500 text-white py-2 px-4 rounded mr-4" onClick={handlePrint}>

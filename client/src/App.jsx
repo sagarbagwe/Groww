@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
@@ -45,13 +46,11 @@ const Home = () => {
               <li>Display a "Thank you for shopping" message to acknowledge the successful completion of the transaction.</li>
             </ol>
           </div>
-
         </div>
       </main>
     </div>
   );
 };
-
 
 const App = () => {
   const theme = {
@@ -65,7 +64,6 @@ const App = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
 
   useEffect(() => {
-    // Fetch data from the API only once
     fetch('https://groww-intern-assignment.vercel.app/v1/api/order-details')
       .then((response) => {
         if (!response.ok) {
@@ -80,8 +78,6 @@ const App = () => {
   }, []);
 
   const handlePlaceOrder = (paymentMethod) => {
-    // Implement logic to place the order (e.g., send data to the server)
-    // For now, generate a random order status (Success, Failure, Pending)
     const orderStatusOptions = ['Success', 'Failure', 'Pending'];
     const randomStatusIndex = Math.floor(Math.random() * orderStatusOptions.length);
     const randomOrderStatus = orderStatusOptions[randomStatusIndex];
@@ -143,7 +139,20 @@ const App = () => {
             element={<OrderConfirmationPage />}
           />
         </Routes>
+        <Analytics />
       </main>
+      {/* Footer */}
+      <footer
+        style={{
+          background: theme["--foreground"],
+          color: theme["--primary-foreground"],
+          textAlign: "center",
+          padding: "1rem",
+        }}
+        className="w-full"
+      >
+        <p>&copy; 2023 Sagar Bagwe</p>
+      </footer>
     </BrowserRouter>
   );
 };

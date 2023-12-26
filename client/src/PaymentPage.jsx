@@ -1,15 +1,18 @@
+// PaymentPage.jsx
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import CashIcon from './CashIcon';
-import CardIcon from './CardIcon';
-import UPIIcon from './UPIIcon';
-import WalletIcon from './WalletIcon';
+import { useNavigate, useLocation } from 'react-router-dom';
+import CashIcon from './Icon/CashIcon';
+import CardIcon from './Icon/CardIcon';
+import UPIIcon from './Icon/UPIIcon';
+import WalletIcon from './Icon/WalletIcon';
 import { logo } from './assets';
 import { FaCheck, FaArrowRight } from 'react-icons/fa';
+import usePromoCodeStore from './promoCodeStore';
 
 const PaymentPage = ({ orderDetails, onPlaceOrder }) => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   if (!orderDetails) {
     return <div>Loading...</div>;
@@ -21,7 +24,20 @@ const PaymentPage = ({ orderDetails, onPlaceOrder }) => {
 
   const platformFee = totalPayment * platformFeePercentage;
   const gst = totalPayment * gstPercentage;
+
+  // Get promo code and discounted total from the location state
+  const { promoCode, discountedTotal } = location.state || {};
+
+  // Get promoCode and appliedDiscount from the usePromoCodeStore
+  const promoCodeFromStore = usePromoCodeStore((state) => state.promoCode);
+  const appliedDiscountFromStore = usePromoCodeStore((state) => state.appliedDiscount);
+
+  // Update promoCode and discountedTotal if available in the store
+  const updatedPromoCode = promoCode || promoCodeFromStore;
+  const updatedDiscountedTotal = discountedTotal || totalPayment * appliedDiscountFromStore;
+
   const totalAmountPayable = totalPayment + platformFee + gst;
+  const totalPayable = totalAmountPayable - updatedDiscountedTotal; // Calculate total payable
 
   const paymentOptions = [
     { method: 'Cash on Delivery', icon: <CashIcon /> },
@@ -37,7 +53,19 @@ const PaymentPage = ({ orderDetails, onPlaceOrder }) => {
   const handleProceedToConfirmation = () => {
     if (selectedPaymentMethod) {
       const confirmationData = onPlaceOrder(selectedPaymentMethod);
-      navigate(`/confirmation`, { state: { ...confirmationData, paymentDetails: { totalPayment, platformFee, gst, totalAmountPayable } } });
+      navigate(`/confirmation`, {
+        state: {
+          ...confirmationData,
+          paymentDetails: {
+            totalPayment,
+            platformFee,
+            gst,
+            totalAmountPayable,
+            promoCode: updatedPromoCode,
+            discountedTotal: updatedDiscountedTotal,
+          },
+        },
+      });
     } else {
       alert('Please select a payment method.');
     }
@@ -51,11 +79,13 @@ const PaymentPage = ({ orderDetails, onPlaceOrder }) => {
           <div
             key={option.method}
             className={`flex items-center p-4 border border-gray-300 rounded cursor-pointer ${
-              selectedPaymentMethod === option.method ? 'bg-blue-200' : ''
+              selectedPaymentMethod === option.method ? 'bg-gray-800 text-white' : ''
             }`}
             onClick={() => handlePaymentSelection(option.method)}
           >
-            <div className="mr-2">{selectedPaymentMethod === option.method ? <FaCheck className="text-green-500" /> : <FaArrowRight />}</div>
+            <div className="mr-2">
+              {selectedPaymentMethod === option.method ? <FaCheck className="text-green-500" /> : <FaArrowRight />}
+            </div>
             <div className="mr-2">{option.icon}</div>
             {option.method}
           </div>
@@ -70,14 +100,16 @@ const PaymentPage = ({ orderDetails, onPlaceOrder }) => {
         <p className="mb-2 text-lg">Total Payment: ${totalPayment.toFixed(2)}</p>
         <p className="mb-2 text-lg">Platform Fee (2%): ${platformFee.toFixed(2)}</p>
         <p className="mb-2 text-lg">GST (18%): ${gst.toFixed(2)}</p>
-        <p className="text-2xl font-bold">Total Amount Payable: ${totalAmountPayable.toFixed(2)}</p>
+        {updatedPromoCode && <p className="mb-2 text-lg">Promo Code Applied: {updatedPromoCode}</p>}
+        {updatedDiscountedTotal && <p className="mb-2 text-lg">Discounted Total: ${updatedDiscountedTotal.toFixed(2)}</p>}
+        <p className="text-2xl font-bold">Total Payable: ${totalPayable.toFixed(2)}</p>
       </div>
 
       <hr className="my-8" />
 
       <button
         onClick={handleProceedToConfirmation}
-        className="bg-blue-500 text-white py-2 px-4 rounded mt-4 flex items-center"
+        className="bg-green-500 text-white py-2 px-4 rounded-full mt-4 flex items-center"
       >
         {selectedPaymentMethod && <div className="mr-2">{paymentOptions.find((option) => option.method === selectedPaymentMethod).icon}</div>}
         Proceed to Confirmation

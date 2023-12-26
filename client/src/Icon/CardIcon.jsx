@@ -1,4 +1,4 @@
-// CardIcon.jsx
+
 import React from 'react';
 
 const CardIcon = () => (
